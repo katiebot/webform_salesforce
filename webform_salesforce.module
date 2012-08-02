@@ -1,0 +1,43 @@
+<?php
+/**
+ * Implements hook_webform_submission_presave()
+ */
+function webform_salesforce_webform_submission_presave($node, &$submission) {
+  switch ($node->nid) {
+    case YOUR_NID: // the node ID of your Webform
+
+      $sfid = 'YOUR_SALESFORCE_ID'; // Your Salesforce ID
+  
+      // Bundle the request and send it to Salesforce.com
+      // Edit the below and enter the CID values for each field
+      $req .= '&first_name=' . urlencode($submission->data[FIELD_CID]['value'][0]);
+      $req .= '&last_name=' . urlencode($submission->data[FIELD_CID]['value'][0]);
+      $req .= '&title=' . urlencode($submission->data[FIELD_CID]['value'][0]);
+      $req .= '&company=' . urlencode($submission->data[FIELD_CID]['value'][0]);
+      $req .= '&email=' . urlencode($submission->data[FIELD_CID]['value'][0]);
+      $req .= '&city=' . urlencode($submission->data[FIELD_CID]['value'][0]);
+      $req .= '&debug=' . urlencode('0'); // change to 1 for debug mode
+      $req .= '&oid=' . urlencode($sfid); 
+      $req .= '&retURL=' . urlencode('http://www.example.com');
+      //$req .= '&debugEmail=' . urlencode('example@example.com');
+      
+      $header  = 'POST /servlet/servlet.WebToLead?encoding=UTF-8 HTTP/1.0\r\n';
+      $header .= 'Content-Type: application/x-www-form-urlencoded\r\n';
+      $header .= 'Host: www.salesforce.com\r\n';
+      $header .= 'Content-Length: ' . strlen($req) . '\r\n\r\n';
+      $fp = fsockopen ('www.salesforce.com', 80, $errno, $errstr, 30);
+      if (!$fp) {
+        echo 'No connection made';
+      }
+      else {
+        fputs ($fp, $header . $req);
+        while (!feof($fp)) {
+          $res = fgets ($fp, 1024);
+          echo $res;
+        }
+      }
+      fclose($fp);
+      break;
+  }
+}
+?>
